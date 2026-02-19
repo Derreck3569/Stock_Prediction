@@ -30,14 +30,26 @@ def extract_features():
     idx_data = web.DataReader(idx_tickers, 'fred', start=START_DATE, end=END_DATE)
 
     Y = np.log(stk_data.loc[:, ('Adj Close', 'NVDA')]).diff(return_period).shift(-return_period)
-    Y.name = Y.name[-1]+'_Future'
+    Y.name = 'NVDA_Future_Return'
     
-    X1 = np.log(stk_data.loc[:, ('Adj Close', ('AAPL', 'TMC','FDX'))]).diff(return_period)
+    # 4. Create base features (X) - Log returns of your other stocks and indices
+    X1 = np.log(stk_data.loc[:, ('Adj Close', ('AAPL', 'TMC', 'FDX'))]).diff(return_period)
     X1.columns = X1.columns.droplevel()
     X2 = np.log(ccy_data).diff(return_period)
     X3 = np.log(idx_data).diff(return_period)
-
     X = pd.concat([X1, X2, X3], axis=1)
+    
+    # 5. Add 4 Custom Technical Features for NVDA
+    # Feature 1: 14-day Simple Moving Average (Trend)
+    X['NVDA_SMA_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].rolling(window=14).mean()
+    # Feature 2: Volatility (Difference between High and Low)
+    X['NVDA_Volatility'] = stk_data.loc[:, ('High', 'NVDA')] - stk_data.loc[:, ('Low', 'NVDA')]
+    # Feature 3: Momentum (14-day percentage change)
+    X['NVDA_Momentum_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].pct_change(14)
+    # Feature 4: End of Quarter (Calendar feature)
+    X['Is_Quarter_End'] = X.index.is_quarter_end.astype(int)
+    
+    # Combine, clean, and align the dataset
     
     dataset = pd.concat([Y, X], axis=1).dropna().iloc[::return_period, :]
     Y = dataset.loc[:, Y.name]
@@ -66,6 +78,7 @@ def get_bitcoin_historical_prices(days = 60):
     df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms').dt.normalize()
     df = df[['Date', 'Close Price (USD)']].set_index('Date')
     return df
+
 
 
 
