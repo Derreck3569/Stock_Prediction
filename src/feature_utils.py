@@ -33,7 +33,7 @@ def extract_features():
     Y = np.log(stk_data.loc[:, ('Adj Close', 'AAPL')])
     Y.name = 'AAPL'
 
-    X = stk_data.loc[:, ('ADJ Close', 'MPWR')]
+    X = stk_data.loc[:, ('Adj Close', 'MPWR')]
     X.name = 'MPWR'
     
     # 4. Create base features (X) - Log returns of your other stocks and indices
@@ -82,6 +82,7 @@ def get_bitcoin_historical_prices(days = 60):
     df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms').dt.normalize()
     df = df[['Date', 'Close Price (USD)']].set_index('Date')
     return df
+
 
 
 
