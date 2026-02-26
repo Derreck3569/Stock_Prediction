@@ -4,7 +4,7 @@ import datetime
 import yfinance as yf
 import pandas_datareader.data as web
 import requests
-#from datetime import datetime, timedelta
+#from datetime import datetime, timedelta 
 import os
 import sys
 
@@ -45,13 +45,13 @@ def extract_features():
     
     # 5. Add 4 Custom Technical Features for NVDA
     # Feature 1: 14-day Simple Moving Average (Trend)
-    X['NVDA_SMA_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].rolling(window=14).mean()
+    #X['NVDA_SMA_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].rolling(window=14).mean()
     # Feature 2: Volatility (Difference between High and Low)
-    X['NVDA_Volatility'] = stk_data.loc[:, ('High', 'NVDA')] - stk_data.loc[:, ('Low', 'NVDA')]
+    #X['NVDA_Volatility'] = stk_data.loc[:, ('High', 'NVDA')] - stk_data.loc[:, ('Low', 'NVDA')]
     # Feature 3: Momentum (14-day percentage change)
-    X['NVDA_Momentum_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].pct_change(14)
+    #X['NVDA_Momentum_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].pct_change(14)
     # Feature 4: End of Quarter (Calendar feature)
-    X['Is_Quarter_End'] = X.index.is_quarter_end.astype(int)
+    #X['Is_Quarter_End'] = X.index.is_quarter_end.astype(int)
     
     # Combine, clean, and align the dataset
     
@@ -82,6 +82,7 @@ def get_bitcoin_historical_prices(days = 60):
     df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms').dt.normalize()
     df = df[['Date', 'Close Price (USD)']].set_index('Date')
     return df
+
 
 
 
