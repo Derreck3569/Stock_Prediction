@@ -4,7 +4,7 @@ import datetime
 import yfinance as yf
 import pandas_datareader.data as web
 import requests
-#from datetime import datetime, timedelta 
+#from datetime import datetime, timedelta
 import os
 import sys
 
@@ -20,51 +20,56 @@ def extract_features():
     
     START_DATE = (datetime.date.today() - datetime.timedelta(days=365)).strftime("%Y-%m-%d")
     END_DATE = datetime.date.today().strftime("%Y-%m-%d")
-    stk_tickers = ['MPWR','AAPL'] #['MSFT', 'IBM', 'GOOGLE']
-    #ccy_tickers = ['DEXJPUS', 'DEXUSUK']
-    #idx_tickers = ['SP500', 'DJIA', 'VIXCLS']
+    stk_tickers = ['MSFT', 'IBM', 'GOOGL']
+    ccy_tickers = ['DEXJPUS', 'DEXUSUK']
+    idx_tickers = ['SP500', 'DJIA', 'VIXCLS']
     
     stk_data = yf.download(stk_tickers, start=START_DATE, end=END_DATE, auto_adjust=False)
     #stk_data = web.DataReader(stk_tickers, 'yahoo')
-    #ccy_data = web.DataReader(ccy_tickers, 'fred', start=START_DATE, end=END_DATE)
-    #idx_data = web.DataReader(idx_tickers, 'fred', start=START_DATE, end=END_DATE)
+    ccy_data = web.DataReader(ccy_tickers, 'fred', start=START_DATE, end=END_DATE)
+    idx_data = web.DataReader(idx_tickers, 'fred', start=START_DATE, end=END_DATE)
 
-    #Y = np.log(stk_data.loc[:, ('Adj Close', 'NVDA')]).diff(return_period).shift(-return_period)
-    Y = np.log(stk_data.loc[:, ('Adj Close', 'AAPL')])
-    Y.name = 'AAPL'
+    Y = np.log(stk_data.loc[:, ('Adj Close', 'MSFT')]).diff(return_period).shift(-return_period)
+    Y.name = Y.name[-1]+'_Future'
+    
+    X1 = np.log(stk_data.loc[:, ('Adj Close', ('GOOGL', 'IBM'))]).diff(return_period)
+    X1.columns = X1.columns.droplevel()
+    X2 = np.log(ccy_data).diff(return_period)
+    X3 = np.log(idx_data).diff(return_period)
 
-    X = stk_data.loc[:, ('Adj Close', 'MPWR')]
-    X.name = 'MPWR'
+    X = pd.concat([X1, X2, X3], axis=1)
     
-    # 4. Create base features (X) - Log returns of your other stocks and indices
-    #X1 = np.log(stk_data.loc[:, ('Adj Close', ('AAPL', 'TMC', 'FDX'))]).diff(return_period)
-    #X1.columns = X1.columns.droplevel()
-    #X2 = np.log(ccy_data).diff(return_period)
-    #X3 = np.log(idx_data).diff(return_period)
-    #X = pd.concat([X1, X2, X3], axis=1)
-    
-    # 5. Add 4 Custom Technical Features for NVDA
-    # Feature 1: 14-day Simple Moving Average (Trend)
-    #X['NVDA_SMA_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].rolling(window=14).mean()
-    # Feature 2: Volatility (Difference between High and Low)
-    #X['NVDA_Volatility'] = stk_data.loc[:, ('High', 'NVDA')] - stk_data.loc[:, ('Low', 'NVDA')]
-    # Feature 3: Momentum (14-day percentage change)
-    #X['NVDA_Momentum_14'] = stk_data.loc[:, ('Adj Close', 'NVDA')].pct_change(14)
-    # Feature 4: End of Quarter (Calendar feature)
-    #X['Is_Quarter_End'] = X.index.is_quarter_end.astype(int)
-    
-    # Combine, clean, and align the dataset
-    
-    dataset = pd.concat([Y, X], axis=1).dropna()#.iloc[::return_period, :]
+    dataset = pd.concat([Y, X], axis=1).dropna().iloc[::return_period, :]
     Y = dataset.loc[:, Y.name]
-    X = dataset.loc[:, X.name]
+    X = dataset.loc[:, X.columns]
     dataset.index.name = 'Date'
     #dataset.to_csv(r"./test_data.csv")
     features = dataset.sort_index()
     features = features.reset_index(drop=True)
-    #features = features.iloc[:,1:]
+    features = features.iloc[:,1:]
     return features
 
+def extract_features_pair():
+
+    START_DATE = (datetime.date.today() - datetime.timedelta(days=365)).strftime("%Y-%m-%d")
+    END_DATE = datetime.date.today().strftime("%Y-%m-%d")
+    stk_tickers = ['AAPL', 'MPWR']
+    
+    stk_data = yf.download(stk_tickers, start=START_DATE, end=END_DATE, auto_adjust=False)
+
+    Y = stk_data.loc[:, ('Adj Close', 'AAPL')]
+    Y.name = 'AAPL'
+
+    X = stk_data.loc[:, ('Adj Close', 'MPWR')]
+    X.name = 'MPWR'
+
+    dataset = pd.concat([Y, X], axis=1).dropna()
+    Y = dataset.loc[:, Y.name]
+    X = dataset.loc[:, X.name]
+    dataset.index.name = 'Date'
+    features = dataset.sort_index()
+    features = features.reset_index(drop=True)
+    return features
 
 def get_bitcoin_historical_prices(days = 60):
     
@@ -82,14 +87,4 @@ def get_bitcoin_historical_prices(days = 60):
     df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms').dt.normalize()
     df = df[['Date', 'Close Price (USD)']].set_index('Date')
     return df
-
-
-
-
-
-
-
-
-
-
 
