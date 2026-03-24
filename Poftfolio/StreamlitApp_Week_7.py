@@ -59,8 +59,8 @@ MODEL_INFO = {
         "endpoint": aws_endpoint,
         "explainer": 'explainer_pair.shap',
         "pipeline": 'finalized_model.tar.gz',
-        "keys": ["MPWR", "AAPL"],
-        "inputs": [{"name": k, "type": "number", "min": 0.0, "default": 0.0, "step": 10.0} for k in ["MPWR", "AAPL"]]
+        "keys": ["NVDA", "GEMI"],
+        "inputs": [{"name": k, "type": "number", "min": 0.0, "default": 0.0, "step": 10.0} for k in ["NVDA", "GEMI"]]
 }
 
 def load_pipeline(_session, bucket, key):
