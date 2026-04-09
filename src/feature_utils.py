@@ -91,7 +91,7 @@ def convert_input_pca_regression(request_body, request_content_type):
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_dir, '..'))
-    file_path = os.path.join(project_root, 'Portfolio/SP500Data.csv')
+    file_path = os.path.join(project_root, 'Poftfolio/SP500Data.csv')
 
     dataset = pd.read_csv(file_path,index_col=0)
 
