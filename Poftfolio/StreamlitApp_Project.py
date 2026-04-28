@@ -74,8 +74,8 @@ MODEL_INFO = {
     "explainer" : "explainer_fraud.shap",
     # ── FIX 3: pipeline tar filename matches what notebook uploads to S3 ─────
     "pipeline"  : "fine_tuned_pipeline.tar.gz",
-    "keys"      : ['TransactionAmt','card6_freq_enc','card3','C12'],
-    "inputs"    : [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['TransactionAmt','card6_freq_enc','card3','C12']]
+    "keys"      : ['V292','V291','id_35','V295'],
+    "inputs"    : [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['V292','V291','id_35','V295']]
 }
 
 
