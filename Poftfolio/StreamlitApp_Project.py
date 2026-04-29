@@ -111,23 +111,20 @@ def load_shap_explainer(_session, bucket, key, local_path):
 
 # Prediction Logic
 def call_model_api(input_df):
-
     predictor = Predictor(
         endpoint_name=MODEL_INFO["endpoint"],
         sagemaker_session=sm_session,
         serializer=JSONSerializer(),
-        # ── FIX 5: deserializer must match inference.py output_fn (JSON, not numpy)
         deserializer=JSONDeserializer()
     )
-
+    
     try:
-        # ── FIX 6: send DataFrame as records-orient JSON so inference.py's
-        #          pd.read_json() reconstructs a DataFrame with column names
         if isinstance(input_df, dict):
             input_df = pd.DataFrame(input_df)
-        json_payload = input_df.to_json(orient="records")
-
-        raw_pred = predictor.predict(json_payload)
+        # Pass a Python list-of-dicts; JSONSerializer handles serialisation
+        payload = input_df.to_dict(orient="records")
+        
+        raw_pred = predictor.predict(payload)
 
         # ── FIX 7: inference.py now returns {"prediction":[...], "probability":[...]}
         pred_val = raw_pred["prediction"][0]
