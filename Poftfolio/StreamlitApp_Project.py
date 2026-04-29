@@ -161,11 +161,25 @@ def display_explanation(input_df, session, aws_bucket):
     shap_values = explainer(input_df_transformed)
 
     st.subheader("🔍 Decision Transparency (SHAP)")
+    
+    # SHAP returns 2D (single output) or 3D (multi-class). Handle both.
+    if len(shap_values.shape) == 3:
+        # Multi-class output — pick class 1 (fraud)
+        sv_for_plot = shap_values[0, :, 1]
+    else:
+        # Single-output explainer — already 2D
+        sv_for_plot = shap_values[0]
+    
     fig, ax = plt.subplots(figsize=(10, 4))
-    shap.plots.waterfall(shap_values[0, :, 1], show=False)  # class 1 = fraud
+    shap.plots.waterfall(sv_for_plot, show=False)
     st.pyplot(fig)
     plt.close(fig)
-    top_feature = pd.Series(shap_values[0, :, 1].values, index=shap_values[0, :, 1].feature_names).abs().idxmax()
+    
+    top_feature = (
+        pd.Series(sv_for_plot.values, index=sv_for_plot.feature_names)
+        .abs()
+        .idxmax()
+    )
     st.info(f"**Business Insight:** The most influential factor in this decision was **{top_feature}**.")
 
 
